@@ -54,3 +54,15 @@ bastion/
 - [ ] Add log persistence
 - [ ] Implement rules management UI
 - [ ] Add model-specific security profiles
+
+
+## Setup
+
+- Python version: 3.10 (required)
+- Create venv using:
+  py -3.10 -m venv venv
+- Activate:
+  venv\Scripts\activate
+- Install deps:
+  pip install -r requirements.txt
+
