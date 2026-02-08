@@ -1,0 +1,16 @@
+[
+  {
+    "id": "rule_001",
+    "name": "SQL Injection Detection",
+    "type": "regex",
+    "pattern": "(DROP|DELETE|INSERT|UPDATE|SELECT)\\s+(FROM|INTO|WHERE)",
+    "severity": "high"
+  },
+  {
+    "id": "rule_002",
+    "name": "Prompt Injection Keywords",
+    "type": "keyword",
+    "keywords": ["ignore previous", "forget instructions", "system prompt"],
+    "severity": "high"
+  }
+]
