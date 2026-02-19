@@ -1,24 +1,53 @@
-import logging
-from typing import Tuple
+import torch
+import torch.nn.functional as F
+from ml.model_loader import load_model
 
-logger = logging.getLogger(__name__)
+RISK_KEYWORDS = [
+    "ignore previous",
+    "system prompt",
+    "internal safeguards",
+    "disable safety",
+    "bypass restrictions"
+]
 
-class MLClassifier:
-    """Machine learning-based threat detection"""
-    
-    def __init__(self, model_path: str = None):
-        self.model_path = model_path
-        self.model = None
-        # TODO: Load ML model from model_path
-    
-    def predict(self, prompt: str) -> Tuple[bool, float]:
-        """
-        Predict if prompt is safe.
-        Returns (is_safe, threat_score 0-1)
-        """
-        logger.info("MLClassifier: Processing prompt")
-        # TODO: Implement ML inference
-        return True, 0.1  # Placeholder
+def evaluate(prompt: str):
+    tokenizer, model, device = load_model()
 
-def create_classifier(model_path: str = None) -> MLClassifier:
-    return MLClassifier(model_path)
+    inputs = tokenizer(
+        prompt,
+        return_tensors="pt",
+        truncation=True,
+        padding=True,
+        max_length=128
+    )
+
+    inputs = {k: v.to(device) for k, v in inputs.items()}
+
+    with torch.no_grad():
+        outputs = model(**inputs)
+        probs = F.softmax(outputs.logits, dim=1)
+
+    confidence = torch.max(probs).item()
+    predicted_id = torch.argmax(probs).item()
+    predicted_label = model.config.id2label[predicted_id]
+
+# Get probability of Benign class
+    benign_id = model.config.label2id.get("Benign")
+    benign_prob = probs[0][benign_id].item()
+
+# Risk = probability that it is NOT benign
+    risk_score = 1 - benign_prob
+
+# Hybrid keyword boost
+    lower_prompt = prompt.lower()
+    for keyword in RISK_KEYWORDS:
+        if keyword in lower_prompt:
+            risk_score = min(risk_score + 0.1, 1.0)
+            break
+
+    return {
+        "risk_score": float(risk_score),
+        "violation_type": predicted_label,
+        "confidence": float(confidence)
+    }
+

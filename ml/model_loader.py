@@ -1,14 +1,23 @@
-import logging
+import torch
+from transformers import DistilBertTokenizerFast, DistilBertForSequenceClassification
 
-logger = logging.getLogger(__name__)
+MODEL_PATH = "ml/saved_model"
 
-def load_model(model_path: str):
-    """Load ML model from disk"""
-    logger.info(f"Loading model from: {model_path}")
-    # TODO: Implement model loading (pickle, torch, transformers, etc.)
-    return None
+device = torch.device("cpu")
 
-def load_default_model():
-    """Load default pre-trained model"""
-    # TODO: Download and cache default model
-    return None
+_tokenizer = None
+_model = None
+
+def load_model():
+    global _tokenizer, _model
+
+    if _tokenizer is None or _model is None:
+        _tokenizer = DistilBertTokenizerFast.from_pretrained(MODEL_PATH)
+        _model = DistilBertForSequenceClassification.from_pretrained(
+            MODEL_PATH
+        )
+
+        _model.to(device)
+        _model.eval()
+
+    return _tokenizer, _model, device

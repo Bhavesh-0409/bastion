@@ -1,16 +1,27 @@
 # Virtual environment
 venv/
+env/
 
 # Python cache
 __pycache__/
 *.pyc
+*.pyo
 
 # Environment variables
 .env
 
 # Logs
 logs/
+*.log
 
 # OS files
 .DS_Store
 Thumbs.db
+
+# ML model artifacts
+ml/saved_model/
+*.safetensors
+*.bin
+
+# Streamlit
+.streamlit/
