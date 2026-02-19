@@ -1,6 +1,7 @@
 import streamlit as st
 import time
 
+
 # -------------------- PAGE CONFIG --------------------
 st.set_page_config(
     page_title="Bastion Security Dashboard",
