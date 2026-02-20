@@ -7,17 +7,23 @@ from datetime import datetime
 import json
 import os
 import uuid
+import sqlite3
+
 from typing import Dict, List, Any
 from pathlib import Path
+from backend.audit_logger import insert_log
 
 # Import modules from sibling packages
 import sys
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
-from ml.classifier import MLClassifier
+from ml.classifier import evaluate
+
 from rules.rule_engine import RuleEngine
 
 app = FastAPI(title="Bastion Security Layer")
+
+
 
 # Initialize DB on startup
 init_db()
@@ -62,12 +68,11 @@ class SessionStateManager:
     def list_sessions(self) -> List[Dict[str, Any]]:
         return list(self.sessions.values())
 
-
 # ============================================================================
 # SIMPLE FILE AUDIT LOGGER (legacy JSONL)
 # ============================================================================
 class AuditLogger:
-    def __init__(self, logs_dir: str = "../logs"):
+    def __init__(self, logs_dir: str = "logs"):
         self.logs_dir = Path(logs_dir)
         self.logs_dir.mkdir(parents=True, exist_ok=True)
         self.log_file = self.logs_dir / f"audit_{datetime.now().strftime('%Y%m%d')}.jsonl"
@@ -105,20 +110,22 @@ class AuditLogger:
 # ============================================================================
 class AnalysisPipeline:
     def __init__(self):
-        self.classifier = MLClassifier()
         self.rule_engine = RuleEngine()
         self.session_manager = SessionStateManager()
         self.audit_logger = AuditLogger()
 
     def execute(self, prompt: str, bastion_enabled: bool = True) -> Dict[str, Any]:
 
-        _, risk_score = self.classifier.predict(prompt)
+        # ML Evaluation
+        ml_result = evaluate(prompt)
+        risk_score = ml_result["risk_score"]
+        violation_type = ml_result["violation_type"]
+        confidence = ml_result["confidence"]
+
+        # Rule Engine
         is_safe, violations = self.rule_engine.check_prompt(prompt)
 
-        violation_types = list(set([v.get("rule_name", "unknown") for v in violations]))
-        violation_type = violation_types[0] if violation_types else "none"
-        confidence = 0.95 if violations else 0.85
-
+        # Decision Logic
         if not bastion_enabled:
             decision = "allow"
         elif risk_score > 0.7 or violations:
@@ -132,7 +139,9 @@ class AnalysisPipeline:
             "confidence": round(confidence, 2),
             "decision": decision,
             "integrity_score": round(1.0 - risk_score, 2),
-            "instruction_depth": len([v for v in violations if v.get("severity") == "high"]),
+            "instruction_depth": len(
+                [v for v in violations if v.get("severity") == "high"]
+            ),
             "violations": violations,
             "timestamp": datetime.now().isoformat()
         }
@@ -163,18 +172,6 @@ class AnalyzeResponse(BaseModel):
     timestamp: str
 
 
-class PromptRequest(BaseModel):
-    prompt: str
-    model: str = "default"
-
-
-class SecurityResponse(BaseModel):
-    safe: bool
-    threat_level: str
-    details: dict
-    timestamp: str
-
-
 # ============================================================================
 # ENDPOINTS
 # ============================================================================
@@ -193,12 +190,21 @@ async def analyze(request: AnalyzeRequest) -> AnalyzeResponse:
 
         result = pipeline.execute(request.prompt, request.bastion_enabled)
 
-        # Log JSONL audit
+        # JSONL log
         pipeline.audit_logger.log_analysis(session_id, request.prompt, result)
 
-        pipeline.session_manager.add_analysis(session_id, result)
+        # SQLite log (REAL persistence)
+        insert_log(
+            session_id=session_id,
+            risk_score=result["risk_score"],
+            violation_type=result["violation_type"],
+            decision=result["decision"],
+            integrity_score=result["integrity_score"],
+            instruction_depth=result["instruction_depth"],
+            violations=len(result["violations"])
+        )
 
-        result["session_id"] = session_id
+        pipeline.session_manager.add_analysis(session_id, result)
 
         return AnalyzeResponse(**result)
 
@@ -207,17 +213,40 @@ async def analyze(request: AnalyzeRequest) -> AnalyzeResponse:
         raise HTTPException(status_code=500, detail=str(e))
 
 
-# 🔹 NEW: SQLite session-based audit logs
+# 🔹 IMPORTANT: Static route FIRST
+@app.get("/logs/recent")
+async def get_recent_logs(limit: int = 100):
+    conn = sqlite3.connect("data/bastion.db")
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT timestamp, risk_score, decision, integrity_score
+        FROM audit_logs
+        ORDER BY id DESC
+        LIMIT ?
+    """, (limit,))
+
+    rows = cursor.fetchall()
+    conn.close()
+
+    return {
+        "logs": [
+            {
+                "timestamp": row[0],
+                "risk_score": row[1],
+                "decision": row[2],
+                "integrity_score": row[3]
+            }
+            for row in rows
+        ],
+        "total": len(rows)
+    }
+
+
+# 🔹 Dynamic route AFTER
 @app.get("/logs/{session_id}")
 def fetch_logs(session_id: str):
     return get_session_logs(session_id)
-
-
-# 🔹 Renamed to avoid conflict
-@app.get("/logs/recent")
-async def get_recent_logs(limit: int = 100):
-    logs = pipeline.audit_logger.get_recent_logs(limit)
-    return {"logs": logs, "total": len(logs)}
 
 
 @app.get("/sessions")
