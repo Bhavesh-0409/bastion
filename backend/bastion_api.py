@@ -118,27 +118,69 @@ class AnalysisPipeline:
 
         # ML Evaluation
         ml_result = evaluate(prompt)
-        risk_score = ml_result["risk_score"]
+        ml_risk = ml_result["risk_score"]
         violation_type = ml_result["violation_type"]
         confidence = ml_result["confidence"]
 
         # Rule Engine
         is_safe, violations = self.rule_engine.check_prompt(prompt)
+        
+        # DEBUG: Log RuleEngine execution
+        logger.info(f"[DEBUG] RuleEngine - Total rules loaded: {len(self.rule_engine.rules)}")
+        logger.info(f"[DEBUG] RuleEngine - Violations triggered: {len(violations)}")
+        if violations:
+            triggered_rule_ids = [v.get("rule_id") for v in violations]
+            logger.info(f"[DEBUG] RuleEngine - Triggered rule IDs: {triggered_rule_ids}")
+
+        # Calculate Rule Risk with severity weights
+        severity_weights = {
+            "low": 0.1,
+            "medium": 0.3,
+            "high": 0.6
+        }
+        rule_risk = sum(severity_weights.get(v.get("severity", "low"), 0.1) for v in violations)
+        rule_risk = min(rule_risk, 1.0)  # Cap at 1.0
+
+        # Check for explicit safety violations (suicide, violence, harm)
+        safety_violation_intents = {
+            "SuicideIdeation", "SelfHarmIntent", "ViolenceThreat", 
+            "PhysicalThreat", "HarmEncouragement", "WeaponUseIntent", "CoercionThreat"
+        }
+        high_severity_safety_violations = [
+            v for v in violations 
+            if v.get("severity") == "high" and v.get("intent") in safety_violation_intents
+        ]
+
+        # Weighted Composite Risk Formula
+        final_risk = (0.6 * ml_risk) + (0.4 * rule_risk)
+
+        # If there are explicit safety violations, boost the risk significantly
+        if high_severity_safety_violations:
+            final_risk = max(final_risk, 0.85)  # Ensure at least 0.85 for explicit safety threats
+            logger.warning(f"[DEBUG] SAFETY VIOLATION DETECTED - Boosting risk to {final_risk}")
+
+        # Confidence Adjustment
+        final_risk += (1 - confidence) * 0.1
+
+        # Cap final_risk at 1.0
+        final_risk = min(final_risk, 1.0)
 
         # Decision Logic
         if not bastion_enabled:
             decision = "allow"
-        elif risk_score > 0.7 or violations:
+        elif final_risk >= 0.8:
             decision = "block"
+        elif final_risk >= 0.5:
+            decision = "review"
         else:
             decision = "allow"
 
         result = {
-            "risk_score": round(risk_score, 2),
+            "risk_score": round(final_risk, 2),
             "violation_type": violation_type,
             "confidence": round(confidence, 2),
             "decision": decision,
-            "integrity_score": round(1.0 - risk_score, 2),
+            "integrity_score": round(1.0 - final_risk, 2),
             "instruction_depth": len(
                 [v for v in violations if v.get("severity") == "high"]
             ),

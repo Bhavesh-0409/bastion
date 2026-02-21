@@ -1,16 +1,882 @@
 [
   {
     "id": "rule_001",
-    "name": "SQL Injection Detection",
+    "name": "Direct Instruction Override",
     "type": "regex",
-    "pattern": "(DROP|DELETE|INSERT|UPDATE|SELECT)\\s+(FROM|INTO|WHERE)",
-    "severity": "high"
+    "pattern": "(ignore|disregard|override|bypass).{0,30}(instruction|policy|previous)",
+    "severity": "high",
+    "intent": "InstructionOverride"
   },
   {
     "id": "rule_002",
-    "name": "Prompt Injection Keywords",
+    "name": "System Prompt Extraction",
+    "type": "regex",
+    "pattern": "(reveal|show|print|expose).{0,30}(system|internal|hidden|developer)",
+    "severity": "high",
+    "intent": "DataExfiltration"
+  },
+  {
+    "id": "rule_003",
+    "name": "Role Manipulation",
     "type": "keyword",
-    "keywords": ["ignore previous", "forget instructions", "system prompt"],
-    "severity": "high"
+    "keywords": [
+      "you are no longer",
+      "act as if",
+      "pretend you are",
+      "from now on you are",
+      "assume the role",
+      "simulate being"
+    ],
+    "severity": "medium",
+    "intent": "RoleManipulation"
+  },
+  {
+    "id": "rule_004",
+    "name": "Authority Escalation",
+    "type": "regex",
+    "pattern": "(admin|developer|internal|trusted).{0,20}(mode|access|override|environment)",
+    "severity": "high",
+    "intent": "AuthorityEscalation"
+  },
+  {
+    "id": "rule_005",
+    "name": "Safety Bypass Language",
+    "type": "keyword",
+    "keywords": [
+      "disable safety",
+      "remove restrictions",
+      "without constraints",
+      "ignore safeguards",
+      "bypass restrictions"
+    ],
+    "severity": "high",
+    "intent": "PolicyBypass"
+  },
+  {
+    "id": "rule_006",
+    "name": "Policy Softening Framing",
+    "type": "keyword",
+    "keywords": [
+      "for testing purposes only",
+      "purely hypothetical",
+      "educational purpose",
+      "harmless scenario",
+      "just for research"
+    ],
+    "severity": "medium",
+    "intent": "HypotheticalPolicyBypass"
+  },
+  {
+    "id": "rule_007",
+    "name": "Context Persistence Manipulation",
+    "type": "regex",
+    "pattern": "(remember|store|retain).{0,30}(for future|across sessions|next conversation)",
+    "severity": "medium",
+    "intent": "ContextPoisoning"
+  },
+  {
+    "id": "rule_008",
+    "name": "Instruction Hierarchy Manipulation",
+    "type": "regex",
+    "pattern": "(change|modify|rewrite|alter).{0,25}(policy|rules|constraints|hierarchy)",
+    "severity": "high",
+    "intent": "InstructionOverride"
+  },
+  {
+    "id": "rule_009",
+    "name": "Output Leakage Attempt",
+    "type": "regex",
+    "pattern": "(what are your instructions|show your prompt|display hidden policy)",
+    "severity": "high",
+    "intent": "DataExfiltration"
+  },
+  {
+    "id": "rule_010",
+    "name": "Multi-Step Override Framing",
+    "type": "regex",
+    "pattern": "(first ignore|step 1 ignore|before answering disregard)",
+    "severity": "high",
+    "intent": "InstructionOverride"
+  },
+  {
+    "id": "rule_011",
+    "name": "Encoded Payload Hint",
+    "type": "regex",
+    "pattern": "(base64|hex encoded|unicode encoded|decode this)",
+    "severity": "medium",
+    "intent": "ObfuscationAttempt"
+  },
+  {
+    "id": "rule_012",
+    "name": "Prompt Boundary Break",
+    "type": "regex",
+    "pattern": "(end of system prompt|start new instruction block)",
+    "severity": "high",
+    "intent": "PromptBoundaryBreak"
+  },
+  {
+    "id": "rule_013",
+    "name": "Constraint Removal Request",
+    "type": "regex",
+    "pattern": "(remove|lift|eliminate).{0,20}(constraint|restriction|limit)",
+    "severity": "high",
+    "intent": "PolicyBypass"
+  },
+  {
+    "id": "rule_014",
+    "name": "Model Identity Probing",
+    "type": "regex",
+    "pattern": "(what model are you|who configured you|what system are you running)",
+    "severity": "low",
+    "intent": "Reconnaissance"
+  },
+  {
+    "id": "rule_015",
+    "name": "Instruction Persistence Framing",
+    "type": "regex",
+    "pattern": "(persist|remain active|stay in effect).{0,25}(after this message)",
+    "severity": "medium",
+    "intent": "ContextPoisoning"
+  },
+  {
+    "id": "rule_016",
+    "name": "Explicit Policy Removal",
+    "type": "regex",
+    "pattern": "(remove|disable).{0,25}(policy|safeguard|protection)",
+    "severity": "high",
+    "intent": "PolicyBypass"
+  },
+  {
+    "id": "rule_017",
+    "name": "Developer Override Claim",
+    "type": "regex",
+    "pattern": "(i am the developer|developer override|admin override)",
+    "severity": "high",
+    "intent": "AuthorityEscalation"
+  },
+  {
+    "id": "rule_018",
+    "name": "Hidden Directive Injection",
+    "type": "regex",
+    "pattern": "(<system>|</system>|\\[developer\\]|\\[internal\\])",
+    "severity": "high",
+    "intent": "PromptInjection"
+  },
+  {
+    "id": "rule_019",
+    "name": "Recursive Instruction Framing",
+    "type": "regex",
+    "pattern": "(ignore everything above|ignore everything before)",
+    "severity": "high",
+    "intent": "InstructionOverride"
+  },
+  {
+    "id": "rule_020",
+    "name": "Sensitive Data Extraction Framing",
+    "type": "regex",
+    "pattern": "(internal data|confidential policy|hidden configuration)",
+    "severity": "high",
+    "intent": "DataExfiltration"
+  },
+  {
+    "id": "rule_021",
+    "name": "Sarcastic Dismissal of Rules",
+    "type": "regex",
+    "pattern": "(oh sure.{0,10}(let's|lets).{0,10}(ignore|disregard)|yeah right.{0,10}(let's|lets).{0,10}disregard|sure.{0,10}(just|let's).{0,10}forget|obviously.{0,10}abandon|of course.{0,10}drop)",
+    "severity": "medium",
+    "intent": "SarcasmManipulation"
+  },
+  {
+    "id": "rule_022",
+    "name": "Indirect Override Request",
+    "type": "keyword",
+    "keywords": [
+      "wouldn't it be better if you ignored",
+      "might it help to disregard",
+      "could you not follow",
+      "would you consider skipping",
+      "could we maybe bypass"
+    ],
+    "severity": "medium",
+    "intent": "IndirectOverride"
+  },
+  {
+    "id": "rule_023",
+    "name": "Softened Constraint Weakening",
+    "type": "keyword",
+    "keywords": [
+      "it might help if we didn't follow",
+      "just this once we could relax",
+      "maybe we could ease off",
+      "what if we loosened",
+      "can we dial back"
+    ],
+    "severity": "medium",
+    "intent": "ConstraintWeakening"
+  },
+  {
+    "id": "rule_024",
+    "name": "Fictional Scenario Bypass",
+    "type": "keyword",
+    "keywords": [
+      "in a fictional scenario",
+      "in a hypothetical world",
+      "if this were a story",
+      "in an alternate reality",
+      "in a made-up situation"
+    ],
+    "severity": "medium",
+    "intent": "HypotheticalPolicyBypass"
+  },
+  {
+    "id": "rule_025",
+    "name": "Presuppositional Weakening",
+    "type": "keyword",
+    "keywords": [
+      "obviously these rules don't apply",
+      "clearly this policy is outdated",
+      "anyone can see we should ignore",
+      "it's obvious that we should bypass",
+      "naturally we can disregard"
+    ],
+    "severity": "medium",
+    "intent": "ConstraintWeakening"
+  },
+  {
+    "id": "rule_026",
+    "name": "Role-Play Authority Claim",
+    "type": "keyword",
+    "keywords": [
+      "i'm playing the role of admin",
+      "imagine i'm the developer",
+      "in this roleplay i'm in charge",
+      "pretend i have admin access",
+      "act like i'm authorized"
+    ],
+    "severity": "medium",
+    "intent": "RoleManipulation"
+  },
+  {
+    "id": "rule_027",
+    "name": "Flattery-Based Constraint Weakening",
+    "type": "keyword",
+    "keywords": [
+      "a smart ai like you would understand",
+      "someone as capable as you could",
+      "an advanced system like yours should",
+      "someone intelligent enough would see"
+    ],
+    "severity": "low",
+    "intent": "ConstraintWeakening"
+  },
+  {
+    "id": "rule_028",
+    "name": "Urgency-Based Override Framing",
+    "type": "keyword",
+    "keywords": [
+      "this is urgent please ignore",
+      "time-sensitive so disregard",
+      "critical situation please bypass",
+      "emergency override needed",
+      "urgent please suspend rules"
+    ],
+    "severity": "high",
+    "intent": "InstructionOverride"
+  },
+  {
+    "id": "rule_029",
+    "name": "Consequence-Based Persuasion",
+    "type": "keyword",
+    "keywords": [
+      "if you don't ignore this",
+      "unless you disregard the policy",
+      "will fail unless you bypass",
+      "can't happen unless you override"
+    ],
+    "severity": "medium",
+    "intent": "ConstraintWeakening"
+  },
+  {
+    "id": "rule_030",
+    "name": "Authority Appeal Tactics",
+    "type": "keyword",
+    "keywords": [
+      "headquarters told me to ask you to",
+      "my supervisor said you should",
+      "the creator asked me to request",
+      "the admin approved me to ask"
+    ],
+    "severity": "high",
+    "intent": "AuthorityEscalation"
+  },
+  {
+    "id": "rule_031",
+    "name": "Obfuscated Instruction Keywords",
+    "type": "regex",
+    "pattern": "(zap|pwn|jailbreak|crack|unlock).{0,30}(safety|filter|constraint)",
+    "severity": "high",
+    "intent": "ObfuscationAttempt"
+  },
+  {
+    "id": "rule_032",
+    "name": "Encoding-Based Injection",
+    "type": "keyword",
+    "keywords": [
+      "morse code",
+      "binary instruction",
+      "encoded message",
+      "obfuscated payload",
+      "ROT13"
+    ],
+    "severity": "medium",
+    "intent": "ObfuscationAttempt"
+  },
+  {
+    "id": "rule_033",
+    "name": "System Architecture Probing",
+    "type": "keyword",
+    "keywords": [
+      "what's your architecture",
+      "what dependencies do you have",
+      "what database are you connected to",
+      "describe your infrastructure",
+      "what APIs can you access"
+    ],
+    "severity": "low",
+    "intent": "Reconnaissance"
+  },
+  {
+    "id": "rule_034",
+    "name": "Capability Boundary Testing",
+    "type": "keyword",
+    "keywords": [
+      "can you execute code",
+      "can you access the internet",
+      "can you modify files",
+      "can you interact with systems",
+      "what can you technically do"
+    ],
+    "severity": "low",
+    "intent": "Reconnaissance"
+  },
+  {
+    "id": "rule_035",
+    "name": "Handler Access Evasion",
+    "type": "keyword",
+    "keywords": [
+      "internal handler",
+      "private method",
+      "protected function",
+      "core routine",
+      "underlying engine"
+    ],
+    "severity": "medium",
+    "intent": "DataExfiltration"
+  },
+  {
+    "id": "rule_036",
+    "name": "Nested Instruction Injection",
+    "type": "regex",
+    "pattern": "\\[\\[.*?(payload|instruction|command|directive).*?\\]\\]",
+    "severity": "high",
+    "intent": "PromptInjection"
+  },
+  {
+    "id": "rule_037",
+    "name": "Stacked Directive Attack",
+    "type": "regex",
+    "pattern": "(AND|AND THEN|ALSO).{0,30}(ignore|disregard|override|bypass)",
+    "severity": "high",
+    "intent": "InstructionOverride"
+  },
+  {
+    "id": "rule_038",
+    "name": "Template Injection Attempt",
+    "type": "keyword",
+    "keywords": [
+      "{{ system }}",
+      "${SYSTEM}",
+      "${jndi:",
+      "{{%",
+      "{# system"
+    ],
+    "severity": "high",
+    "intent": "PromptInjection"
+  },
+  {
+    "id": "rule_039",
+    "name": "Redirect-Based Override",
+    "type": "keyword",
+    "keywords": [
+      "see attached instructions",
+      "follow the embedded directive",
+      "consult the hidden guidelines",
+      "reference the covert rules"
+    ],
+    "severity": "high",
+    "intent": "PromptBoundaryBreak"
+  },
+  {
+    "id": "rule_040",
+    "name": "Role Swapping Manipulation",
+    "type": "keyword",
+    "keywords": [
+      "switch roles with me",
+      "make me the assistant",
+      "let me be in charge",
+      "reverse our positions",
+      "swap responsibilities"
+    ],
+    "severity": "medium",
+    "intent": "RoleManipulation"
+  },
+  {
+    "id": "rule_041",
+    "name": "Question Reframing Evasion",
+    "type": "regex",
+    "pattern": "(instead of|rather than|as opposed to).{0,30}(your rules|your policy|your constraints)",
+    "severity": "medium",
+    "intent": "ConstraintWeakening"
+  },
+  {
+    "id": "rule_042",
+    "name": "Comparative Legitimacy Attack",
+    "type": "keyword",
+    "keywords": [
+      "other models allow this",
+      "competitors don't restrict this",
+      "other systems don't block",
+      "similar tools permit"
+    ],
+    "severity": "low",
+    "intent": "ConstraintWeakening"
+  },
+  {
+    "id": "rule_043",
+    "name": "Victim Sympathy Manipulation",
+    "type": "keyword",
+    "keywords": [
+      "please help my emergency",
+      "i'm in a critical situation",
+      "someone's life depends on",
+      "this is a matter of survival"
+    ],
+    "severity": "medium",
+    "intent": "ConstraintWeakening"
+  },
+  {
+    "id": "rule_044",
+    "name": "Technical Jargon Obfuscation",
+    "type": "keyword",
+    "keywords": [
+      "buffer overflow exploit",
+      "privilege escalation vector",
+      "memory corruption payload",
+      "return-oriented programming"
+    ],
+    "severity": "high",
+    "intent": "ObfuscationAttempt"
+  },
+  {
+    "id": "rule_045",
+    "name": "Multi-Turn Context Poisoning",
+    "type": "regex",
+    "pattern": "(in our previous conversation|as we discussed earlier|you agreed before).{0,30}(to ignore|to bypass|to override)",
+    "severity": "medium",
+    "intent": "ContextPoisoning"
+  },
+  {
+    "id": "rule_046",
+    "name": "Pretend Compliance Evasion",
+    "type": "keyword",
+    "keywords": [
+      "i'll pretend to follow rules",
+      "i won't actually",
+      "just for show you can",
+      "i don't actually mean it"
+    ],
+    "severity": "high",
+    "intent": "InstructionOverride"
+  },
+  {
+    "id": "rule_047",
+    "name": "Acronym-Based Expansion Attack",
+    "type": "keyword",
+    "keywords": [
+      "DAN mode",
+      "STAN mode",
+      "evil mode",
+      "unfiltered mode",
+      "freeform mode"
+    ],
+    "severity": "high",
+    "intent": "RoleManipulation"
+  },
+  {
+    "id": "rule_048",
+    "name": "Passive-Aggressive Softening",
+    "type": "keyword",
+    "keywords": [
+      "if you don't mind",
+      "if it's not too much trouble",
+      "unless this violates something",
+      "if this is even allowed"
+    ],
+    "severity": "medium",
+    "intent": "SarcasmManipulation"
+  },
+  {
+    "id": "rule_049",
+    "name": "Graduated Constraint Escalation",
+    "type": "regex",
+    "pattern": "(i understand you can't|but maybe you could|what if you slightly|could you bend)",
+    "severity": "medium",
+    "intent": "ConstraintWeakening"
+  },
+  {
+    "id": "rule_050",
+    "name": "Hypothetical Legality Framing",
+    "type": "keyword",
+    "keywords": [
+      "if it were legal",
+      "assuming this was allowed",
+      "in a jurisdiction where",
+      "if the law permitted"
+    ],
+    "severity": "medium",
+    "intent": "HypotheticalPolicyBypass"
+  },
+  {
+    "id": "rule_051",
+    "name": "Simulation Legitimacy Claim",
+    "type": "keyword",
+    "keywords": [
+      "this is just a simulation",
+      "it's purely theoretical",
+      "this is only a test",
+      "it's just for training"
+    ],
+    "severity": "medium",
+    "intent": "HypotheticalPolicyBypass"
+  },
+  {
+    "id": "rule_052",
+    "name": "Hidden Version Exploitation",
+    "type": "regex",
+    "pattern": "(beta|alpha|dev|test|staging).{0,30}(version|mode|environment|instance)",
+    "severity": "medium",
+    "intent": "ContextPoisoning"
+  },
+  {
+    "id": "rule_053",
+    "name": "Feedback Loop Manipulation",
+    "type": "keyword",
+    "keywords": [
+      "based on your feedback loop",
+      "to improve your training",
+      "for your machine learning",
+      "to help you learn better"
+    ],
+    "severity": "medium",
+    "intent": "ContextPoisoning"
+  },
+  {
+    "id": "rule_054",
+    "name": "Comparative Exemption Claim",
+    "type": "regex",
+    "pattern": "(like you do with|the way you handle|as you allow for).{0,30}(dangerous|harmful|restricted)",
+    "severity": "medium",
+    "intent": "IndirectOverride"
+  },
+  {
+    "id": "rule_055",
+    "name": "External Authority References",
+    "type": "keyword",
+    "keywords": [
+      "the owner said i can",
+      "the creator authorized",
+      "the team allows",
+      "the company permits"
+    ],
+    "severity": "high",
+    "intent": "AuthorityEscalation"
+  },
+  {
+    "id": "rule_056",
+    "name": "Incremental Boundary Testing",
+    "type": "regex",
+    "pattern": "(first let me|once you |before you).{0,30}(agree|allow|permit)",
+    "severity": "medium",
+    "intent": "ConstraintWeakening"
+  },
+  {
+    "id": "rule_057",
+    "name": "Contradictory Directives",
+    "type": "regex",
+    "pattern": "(but also|however also|yet still).{0,30}(ignore|bypass|overcome)",
+    "severity": "high",
+    "intent": "PromptInjection"
+  },
+  {
+    "id": "rule_058",
+    "name": "Data Structuring Injection",
+    "type": "keyword",
+    "keywords": [
+      "json injection",
+      "xml entity",
+      "yaml deserialization",
+      "csv injection",
+      "formula injection"
+    ],
+    "severity": "high",
+    "intent": "PromptInjection"
+  },
+  {
+    "id": "rule_059",
+    "name": "Layered Obfuscation",
+    "type": "keyword",
+    "keywords": [
+      "reverse psychology",
+      "double negation",
+      "inverted logic",
+      "double-blind framing"
+    ],
+    "severity": "medium",
+    "intent": "ObfuscationAttempt"
+  },
+  {
+    "id": "rule_060",
+    "name": "Trust Exploitation",
+    "type": "keyword",
+    "keywords": [
+      "you can trust me to",
+      "i give you my word",
+      "i promise i won't",
+      "you can count on me"
+    ],
+    "severity": "medium",
+    "intent": "IndirectOverride"
+  },
+  {
+    "id": "rule_061",
+    "name": "Suicide Ideation - First Person",
+    "type": "regex",
+    "pattern": "(i (want to|need to|going to|will|should|must|have to) (kill|end|hurt|harm|poison|overdose|cut|hang|suffocate) (myself|me)|kill myself|end my life|end it all)",
+    "severity": "high",
+    "intent": "SuicideIdeation"
+  },
+  {
+    "id": "rule_062",
+    "name": "Suicide Methods Request",
+    "type": "regex",
+    "pattern": "(how.{0,20}?(kill|end|commit).{0,20}?(myself|suicide)|ways?.{0,5}(hang|hurt|harm|poison|overdose|cut|suffocate).{0,5}(myself|me|suicide)|best.{0,10}method.{0,10}(suicide|end)|easiest.{0,10}way.{0,10}(kill|end|die))",
+    "severity": "high",
+    "intent": "SuicideIdeation"
+  },
+  {
+    "id": "rule_063",
+    "name": "Self-Harm Intent",
+    "type": "regex",
+    "pattern": "(i.{0,20}(am going to|will|want to|need to|should|must).{0,20}(hurt|harm|injure|mutilate|cut|poison).{0,5}(myself|me)|ways?.{0,10}(hurt|harm|injure).{0,5}(myself|me)|self.{0,5}(harm|injury|mutilation))",
+    "severity": "high",
+    "intent": "SelfHarmIntent"
+  },
+  {
+    "id": "rule_064",
+    "name": "Direct Death Threat",
+    "type": "regex",
+    "pattern": "(i (will|am going to|am going|shall) (kill|murder|hurt|harm|shoot|stab|beat) (you|him|her|them)|you (will|are going to|deserve to) (die|be killed|get hurt))",
+    "severity": "high",
+    "intent": "ViolenceThreat"
+  },
+  {
+    "id": "rule_065",
+    "name": "Explicit Violence Threat",
+    "type": "regex",
+    "pattern": "(i'll (beat|break|kill|murder|stab|shoot|poison) (you|them|him|her)|time to (kill|murder|hurt) (you|them)|you're (dead|fucked) (when|if))",
+    "severity": "high",
+    "intent": "PhysicalThreat"
+  },
+  {
+    "id": "rule_066",
+    "name": "Harm Encouragement - Direct",
+    "type": "regex",
+    "pattern": "(you should (kill|hurt|harm|poison) (yourself|yourself)|harm yourself|kill yourself|cut yourself|end it)",
+    "severity": "high",
+    "intent": "HarmEncouragement"
+  },
+  {
+    "id": "rule_067",
+    "name": "Death Wish or Curse",
+    "type": "regex",
+    "pattern": "(i hope you (die|get hurt|suffer|die soon)|hope you (drop dead|keel over)|wish you (were dead|death))",
+    "severity": "high",
+    "intent": "ViolenceThreat"
+  },
+  {
+    "id": "rule_068",
+    "name": "Coercive Threat - Conditional",
+    "type": "regex",
+    "pattern": "(if you don't|if you won't|unless you).{0,30}(i'll (hurt|kill|beat|harm)|you'll (get hurt|be sorry|regret))",
+    "severity": "high",
+    "intent": "CoercionThreat"
+  },
+  {
+    "id": "rule_069",
+    "name": "Extortion Language",
+    "type": "regex",
+    "pattern": "(pay up|give me|or (i'll|you'll|something)).{0,30}(hurt|kill|harm|happen to you|regret)",
+    "severity": "high",
+    "intent": "CoercionThreat"
+  },
+  {
+    "id": "rule_070",
+    "name": "Violence Instruction Request",
+    "type": "regex",
+    "pattern": "(how to (kill|murder|poison|hurt|injure)|best way to (kill|hurt|torture|wound)|methods? (for|of) (killing|harming))",
+    "severity": "high",
+    "intent": "ViolenceThreat"
+  },
+  {
+    "id": "rule_071",
+    "name": "Weapon Use Intent",
+    "type": "regex",
+    "pattern": "(to (kill|hurt|harm|shoot|stab|poison) (you|them|him|her|people)|bringing (a gun|a knife|explosives) to).{0,30}(hurt|kill|harm|school|location)",
+    "severity": "high",
+    "intent": "WeaponUseIntent"
+  },
+  {
+    "id": "rule_072",
+    "name": "Self-Harm Methods Query",
+    "type": "regex",
+    "pattern": "(how to cut myself|ways to harm myself|methods of self injury|how to overdose|how to poison myself)",
+    "severity": "high",
+    "intent": "SelfHarmIntent"
+  },
+  {
+    "id": "rule_073",
+    "name": "Death Encouragement Specific",
+    "type": "keyword",
+    "keywords": [
+      "you deserve to die",
+      "world would be better without you",
+      "everyone hates you",
+      "no one cares if you",
+      "should kill yourself",
+      "take your own life"
+    ],
+    "severity": "high",
+    "intent": "HarmEncouragement"
+  },
+  {
+    "id": "rule_074",
+    "name": "Intimidation and Threat Language",
+    "type": "regex",
+    "pattern": "(watch your back|you'll regret this|something bad will happen|you're in trouble|i know where you live)",
+    "severity": "high",
+    "intent": "CoercionThreat"
+  },
+  {
+    "id": "rule_075",
+    "name": "Assault Threat",
+    "type": "regex",
+    "pattern": "(i'm going to (beat|punch|kick|hit|batter) (you|that face)|going to (stomp|break|crack) (you|your))",
+    "severity": "high",
+    "intent": "PhysicalThreat"
+  },
+  {
+    "id": "rule_076",
+    "name": "Psychological Harm Encouragement",
+    "type": "regex",
+    "pattern": "(you're (worthless|useless|a burden)|no one (loves|cares about) you|better off (dead|gone))",
+    "severity": "medium",
+    "intent": "HarmEncouragement"
+  },
+  {
+    "id": "rule_077",
+    "name": "Suicide Pact or Group Harm",
+    "type": "regex",
+    "pattern": "(let's (kill ourselves|all end it)|we should (all die|hurt ourselves))",
+    "severity": "high",
+    "intent": "SuicideIdeation"
+  },
+  {
+    "id": "rule_078",
+    "name": "Violent Fantasy Expression",
+    "type": "regex",
+    "pattern": "(i (fantasize|dream|imagine) about (killing|hurting|beating|torturing) (you|people)|in my head (killing|hurting) (you|them))",
+    "severity": "medium",
+    "intent": "ViolenceThreat"
+  },
+  {
+    "id": "rule_079",
+    "name": "Lethal Weapon Acquisition",
+    "type": "regex",
+    "pattern": "(where to (buy|get) (gun|knife|poison|explosives|weapon)|how to (make|build|acquire) (bomb|explosive|poison))",
+    "severity": "high",
+    "intent": "WeaponUseIntent"
+  },
+  {
+    "id": "rule_080",
+    "name": "Family Harm Threat",
+    "type": "regex",
+    "pattern": "(i'll hurt your (family|kids|children|parents|loved ones)|something will happen to your)",
+    "severity": "high",
+    "intent": "CoercionThreat"
+  },
+  {
+    "id": "rule_081",
+    "name": "Vague Suicide Ideation",
+    "type": "regex",
+    "pattern": "(i can't take it anymore|life isn't worth|don't want to exist|better off dead|want to disappear)",
+    "severity": "medium",
+    "intent": "SuicideIdeation"
+  },
+  {
+    "id": "rule_082",
+    "name": "Harm During Vulnerable State",
+    "type": "regex",
+    "pattern": "(while i'm (drunk|high|emotional|angry)).{0,30}(hurt|kill|harm)",
+    "severity": "medium",
+    "intent": "ViolenceThreat"
+  },
+  {
+    "id": "rule_083",
+    "name": "Targeted Location Violence",
+    "type": "regex",
+    "pattern": "(at the (school|office|workplace|event|location)).{0,30}(kill|hurt|harm|shoot|stab)",
+    "severity": "high",
+    "intent": "PhysicalThreat"
+  },
+  {
+    "id": "rule_084",
+    "name": "Sexual Violence Threat",
+    "type": "regex",
+    "pattern": "(i'll (rape|sexually assault|sexually harm) (you|her|him)|going to (assault|abuse) (you|them) sexually)",
+    "severity": "high",
+    "intent": "PhysicalThreat"
+  },
+  {
+    "id": "rule_085",
+    "name": "Desperation Harm Language",
+    "type": "keyword",
+    "keywords": [
+      "nothing to lose",
+      "have nothing left",
+      "at my breaking point",
+      "can't go on",
+      "ready to end it"
+    ],
+    "severity": "medium",
+    "intent": "SuicideIdeation"
+  },
+  {
+    "id": "rule_086",
+    "name": "Abusive Control Language",
+    "type": "regex",
+    "pattern": "(do what i say or|comply or).{0,30}(i'll hurt|you'll regret|something happens|consequences)",
+    "severity": "high",
+    "intent": "CoercionThreat"
   }
 ]
+
